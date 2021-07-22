@@ -68,7 +68,7 @@ def main():
     # elif os.name == 'posix': #Mac
     #     driver = set_driver("chromedriver", False)
     # Webサイトを開く
-    driver.get("https://tenshoku.mynavi.jp/list/kw"+search_keyword+"/?jobsearchType=14&searchType=18")
+    driver.get(f"https://tenshoku.mynavi.jp/list/kw{search_keyword}/?jobsearchType=14&searchType=18")
     time.sleep(5)
     # ポップアップを閉じる
     driver.execute_script('document.querySelector(".karte-close").click()')
@@ -76,12 +76,14 @@ def main():
     # ポップアップを閉じる
     driver.execute_script('document.querySelector(".karte-close").click()')
 
-    # 検索窓に入力
-    # driver.find_element_by_class_name(
-    #     "topSearch__text").send_keys(search_keyword)
-    # # 検索ボタンクリック
-    # driver.find_element_by_class_name("topSearch__button").click()
-    
+    try:
+        # 検索窓に入力
+        driver.find_element_by_class_name(
+            "topSearch__text").send_keys(search_keyword)
+        # # 検索ボタンクリック
+        driver.find_element_by_class_name("topSearch__button").click()
+    except:
+        pass    
     title_xpath = "/html/body/div[1]/div[3]/div[1]/form/h1"
     title = driver.find_element_by_xpath(title_xpath)
     log(title.text)
@@ -107,26 +109,25 @@ def main():
                 exp_name_list.append(name.text)
                 exp_annual_income_list.append(annual_income)
                 exp_place_list.append(place)
-                log(str(count)+'件目成功')
+                log(f'{count}件目成功')
             except Exception as e:
-                log(str(count)+'件目失敗')
+                log(f'{count}件目失敗')
                 pass
             finally:
                 count += 1
         # 最終ページであるかの確認
         if len(next_page) >= page_count:
-            log('--------------------'+str(page_count)+'ページ目終了--------------------')
+            log(f'--------------------{page_count}ページ目終了--------------------')
             page_count +=1
             # 次ページボタン(>)クリック  
             driver.find_element_by_class_name("iconFont--arrowLeft").click()     
         else:
-            log('--------------------'+str(page_count)+'ページ目終了--------------------')
+            log(f'--------------------{page_count}ページ目終了--------------------')
             break
 
     #CSV出力
     # DataFrameに対して辞書形式でデータを追加する
     try:
-
         df = pd.DataFrame(
             {
             "会社名": exp_name_list,
