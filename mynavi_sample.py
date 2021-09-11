@@ -55,13 +55,22 @@ def find_table_target_word(th_elms, td_elms, target:str):
     for th_elm,td_elm in zip(th_elms,td_elms):
         if th_elm.text == target:
             return td_elm.text
+            
+def return_log(count):
+    '''
+    検索結果をテキストをして取得する
+    '''
+    res=""
+    res += "---------------------------------------------\n"
+    res += f"検索件数: {count}\n"
+    res += "---------------------------------------------\n"
+
+    return res
 
 # main処理
-
-
-def main():
+def serch(search_keyword):
     log('処理開始')
-    search_keyword = input("検索するワードを入力してください：")
+    # search_keyword = input("検索するワードを入力してください：")
     # driverを起動
     if os.name == 'nt':  # Windows
         driver = set_driver("chromedriver.exe", False)
@@ -93,13 +102,14 @@ def main():
     exp_name_list = []
     exp_annual_income_list = []
     exp_place_list = []
+    count = 0
     while True:
         # ページ終了まで繰り返し取得
         # 検索結果の一番上の会社名とテーブルの値を取得
         name_list = driver.find_elements_by_class_name(
             "cassetteRecruit__name")
         table_list = driver.find_elements_by_css_selector(".cassetteRecruit .tableCondition")
-        count = 0
+        
         # 1ページ分繰り返し
         for name, table in zip(name_list, table_list):
             try:
@@ -124,9 +134,8 @@ def main():
         else:
             log(f'--------------------{page_count}ページ目終了--------------------')
             break
-
-    #CSV出力
-    # DataFrameに対して辞書形式でデータを追加する
+    
+    res_log =  return_log(count)
     try:
         df = pd.DataFrame(
             {
@@ -135,10 +144,28 @@ def main():
             "勤務地": exp_place_list})
         df.to_csv("stock.csv",encoding="UTF_8_sig")
     except Exception as e:
-        log('CSVの出力に失敗しました')
+        log('CSV出力に失敗しました')
     #処理終了
-    log('処理終了')
+    log('検索終了')
+
+    return res_log 
+
+
+def csv_rename(csv_name):
+    log('CSVリネーム開始')
+    #CSVリネーム処理
+    oldpath ='./stock.csv'
+    newpath =f'./{csv_name}.csv'
+    try:
+        os.rename(oldpath,newpath)
+        message ="CSV出力完了です。"
+    except Exception as e:
+        log('CSVのリネームに失敗しました')
+        message ="CSV出力失敗です。"
+    #処理終了
+    log('CSVリネーム終了')
+    return message
 
 # 直接起動された場合はmain()を起動(モジュールとして呼び出された場合は起動しないようにするため)
-if __name__ == "__main__":
-    main()
+# if __name__ == "__main__":
+#     main()
